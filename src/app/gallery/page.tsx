@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import GalleryClient from "./gallery-client";
 
 export default async function GalleryPage() {
   const supabase = await createClient();
@@ -15,7 +16,7 @@ export default async function GalleryPage() {
 
   if (!customer) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">No account found</h1>
           <p className="text-stone-500">No HeritageBox account is linked to this email.</p>
@@ -30,46 +31,16 @@ export default async function GalleryPage() {
     .eq("customer_id", customer.id)
     .order("created_at", { ascending: false });
 
-  const firstName = customer.name?.split(" ")[0] || "there";
+  // Check if user signed up via magic link and has no password set
+  // Users who signed in with OTP and haven't set a password have no identities with "email" provider password
+  const needsPassword = user.app_metadata?.provider === "email"
+    && !user.user_metadata?.has_set_password;
 
   return (
-    <div className="min-h-screen">
-      <nav className="border-b border-stone-200 px-4 h-14 flex items-center bg-white">
-        <span className="text-xl font-bold">HeritageBox</span>
-      </nav>
-
-      <main className="max-w-3xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-2">Welcome back, {firstName}</h1>
-        <p className="text-stone-500 mb-8">{orders?.length || 0} orders</p>
-
-        <div className="grid gap-4">
-          {(orders || []).map((order) => {
-            const isReady = ["digitization_complete", "completed", "qc", "customer_notified"].includes(order.status);
-
-            return (
-              <Link
-                key={order.id}
-                href={isReady ? `/gallery/${order.id}` : "#"}
-                className={`block bg-white border border-stone-200 rounded-xl p-5 shadow-sm transition-all ${
-                  isReady ? "hover:border-stone-400 hover:shadow-md cursor-pointer" : "opacity-50"
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="font-medium text-lg">{order.number}</h2>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      isReady ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600"
-                    }`}>
-                      {isReady ? "Ready" : "In progress"}
-                    </span>
-                  </div>
-                  {isReady && <span className="text-stone-400 text-sm">View →</span>}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </main>
-    </div>
+    <GalleryClient
+      customerName={customer.name}
+      orders={orders || []}
+      needsPassword={needsPassword}
+    />
   );
 }
