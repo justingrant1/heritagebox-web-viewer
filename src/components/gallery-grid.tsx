@@ -156,7 +156,7 @@ export default function GalleryGrid({ assets }: Props) {
             <button
               onClick={() => downloadMany(assets)}
               disabled={isDownloading || assets.length === 0}
-              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm transition-colors"
+              className="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm font-medium transition-colors"
             >
               {isDownloading
                 ? `Downloading ${downloadProgress!.current} / ${downloadProgress!.total}…`
@@ -183,7 +183,7 @@ export default function GalleryGrid({ assets }: Props) {
                 downloadMany(targets);
               }}
               disabled={isDownloading || selectedIds.size === 0}
-              className="px-3 py-1.5 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm transition-colors"
+              className="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm font-medium transition-colors"
             >
               {isDownloading
                 ? `Downloading ${downloadProgress!.current} / ${downloadProgress!.total}…`
