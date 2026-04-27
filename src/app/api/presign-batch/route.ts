@@ -4,9 +4,22 @@ import { createClient } from "@/lib/supabase/server";
 const PRESIGN_BATCH_URL = `${process.env.NEXT_PUBLIC_PRESIGN_URL}-batch`;
 
 export async function POST(request: NextRequest) {
+  // Try cookie-based session first, then fall back to Authorization header
   const supabase = await createClient();
+  let accessToken: string | null = null;
+
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
+  if (session) {
+    accessToken = session.access_token;
+  } else {
+    // Fall back to Bearer token from Authorization header
+    const authHeader = request.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      accessToken = authHeader.slice(7);
+    }
+  }
+
+  if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -15,7 +28,7 @@ export async function POST(request: NextRequest) {
   const res = await fetch(PRESIGN_BATCH_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${session.access_token}`,
+      Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
