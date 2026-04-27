@@ -1,18 +1,7 @@
-import { createClient } from "@/lib/supabase/client";
-
-const PRESIGN_URL = process.env.NEXT_PUBLIC_PRESIGN_URL!;
-
 export async function presignAsset(assetId: string) {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error("Not authenticated");
-
-  const res = await fetch(PRESIGN_URL, {
+  const res = await fetch("/api/presign", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ asset_id: assetId }),
   });
 
@@ -21,16 +10,9 @@ export async function presignAsset(assetId: string) {
 }
 
 export async function presignBatch(assetIds: string[]) {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error("Not authenticated");
-
-  const res = await fetch(`${PRESIGN_URL}-batch`, {
+  const res = await fetch("/api/presign-batch", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ asset_ids: assetIds }),
   });
 
